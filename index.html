@@ -766,20 +766,16 @@
       text-shadow: none;
     }
 
-    .env-display {
-      height: 126px;
-      border-radius: 16px;
+
+    .tab-row.amp-only {
+      display: inline-flex;
+      max-width: 150px;
       margin-bottom: 12px;
-      background:
-        linear-gradient(rgba(40,232,255,.08) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(40,232,255,.08) 1px, transparent 1px),
-        rgba(0, 13, 21, .66);
-      background-size: 22px 22px;
-      border: 1px solid rgba(139,247,255,.24);
-      box-shadow: inset 0 2px 22px rgba(0,0,0,.44);
-      overflow: hidden;
     }
-    .env-display svg { width: 100%; height: 100%; filter: drop-shadow(0 0 7px rgba(40,232,255,.62)); }
+
+    .env-panel .control-grid.four {
+      align-items: stretch;
+    }
 
     .toggle-row {
       display: grid;
@@ -816,13 +812,12 @@
 
     .bottom-strip {
       display: grid;
-      grid-template-columns: 190px 1fr 1.3fr 140px;
+      grid-template-columns: minmax(320px, 1fr) minmax(480px, 1.35fr) 150px;
       gap: 10px;
       margin-top: 10px;
       align-items: stretch;
     }
 
-    .wheel-panel,
     .presets-panel,
     .keyboard-panel,
     .params-panel {
@@ -834,26 +829,6 @@
       border: 1px solid rgba(163, 255, 255, .34);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 8px 18px rgba(0,0,0,.32);
       overflow: hidden;
-    }
-
-    .wheel-panel {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      align-items: center;
-      text-align: center;
-    }
-    .wheel-label { font-size: .66rem; color: rgba(223,250,255,.78); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 7px; font-weight: 850; }
-    .wheel {
-      width: 44px;
-      height: 104px;
-      margin: 0 auto;
-      border-radius: 999px;
-      border: 1px solid rgba(139,247,255,.38);
-      background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,.2) 0 2px, transparent 2px 6px),
-        linear-gradient(90deg, #031520, #16475b 50%, #031520);
-      box-shadow: inset 0 0 14px rgba(0,0,0,.58), 0 0 12px rgba(40,232,255,.18);
     }
 
     .presets-panel {
@@ -1094,7 +1069,7 @@
       .env-panel { grid-column: 4 / span 3; }
       .fx-panel { grid-column: 1 / span 3; }
       .master-panel { grid-column: 4 / span 3; }
-      .bottom-strip { grid-template-columns: 180px 1fr; }
+      .bottom-strip { grid-template-columns: 1fr; }
       .keyboard-panel { grid-column: 1 / -1; }
       .params-panel { grid-column: 1 / -1; }
     }
@@ -1114,7 +1089,6 @@
       .master-panel { grid-column: 1; }
       .control-grid, .control-grid.two, .control-grid.four, .fx-controls { grid-template-columns: repeat(2, 1fr); }
       .bottom-strip { grid-template-columns: 1fr; }
-      .wheel-panel { display: none; }
       .keyboard { height: 84px; }
       .keyboard .key { font-size: .5rem; }
     }
@@ -1123,6 +1097,63 @@
       .control-grid, .control-grid.two, .control-grid.four, .fx-controls, .toggle-row, .suggestions { grid-template-columns: 1fr; }
       .brand h1 { font-size: 2rem; }
     }
+
+    /* Fix: the desktop oscillator module was too narrow for three side-by-side cards.
+       Keep it in a clean two-column plugin layout so labels and boxes never collide. */
+    .osc-panel .control-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .osc-panel .action-bank {
+      grid-column: 1 / -1;
+      min-height: auto;
+    }
+
+    .osc-panel .action-bank .tab-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .osc-panel .action-bank #randomBtn {
+      grid-column: 1 / -1;
+    }
+
+    .select-card,
+    .knob-card,
+    .action-bank {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .ctrl-label,
+    .knob-head {
+      min-width: 0;
+    }
+
+    .ctrl-label > span:first-child,
+    .knob-head > span:first-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      .osc-panel .control-grid {
+        grid-template-columns: 1fr;
+      }
+      .osc-panel .action-bank {
+        grid-column: auto;
+      }
+      .osc-panel .action-bank .tab-row {
+        grid-template-columns: 1fr;
+      }
+      .osc-panel .action-bank #randomBtn {
+        grid-column: auto;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1234,7 +1265,7 @@
         <div class="mini-screen">
           <div class="wave-caption"><span>Current table</span><span id="waveName">Aqua Motion</span></div>
           <div class="wave-display" aria-hidden="true">
-            <svg viewBox="0 0 520 180" preserveAspectRatio="none">
+            <svg id="waveSvg" viewBox="0 0 520 180" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="waveGrad" x1="0" x2="1">
                   <stop offset="0" stop-color="#28e8ff" stop-opacity=".15"/>
@@ -1242,9 +1273,9 @@
                   <stop offset="1" stop-color="#d8ff64" stop-opacity=".58"/>
                 </linearGradient>
               </defs>
-              <path d="M0 92 C35 32, 64 32, 96 92 S158 152, 192 92 S254 32, 288 92 S350 152, 384 92 S446 32, 520 92" fill="none" stroke="url(#waveGrad)" stroke-width="3"/>
-              <path d="M0 112 C44 52, 72 54, 112 112 S180 164, 220 112 S294 54, 336 112 S422 170, 520 104" fill="none" stroke="#28e8ff" stroke-width="1.5" opacity=".62"/>
-              <path d="M0 72 C52 125, 75 130, 122 72 S202 18, 252 72 S329 128, 378 72 S458 20, 520 80" fill="none" stroke="#8bf7ff" stroke-width="1.2" opacity=".42"/>
+              <path id="wavePathMain" d="" fill="none" stroke="url(#waveGrad)" stroke-width="3"/>
+              <path id="wavePathAlt1" d="" fill="none" stroke="#28e8ff" stroke-width="1.5" opacity=".62"/>
+              <path id="wavePathAlt2" d="" fill="none" stroke="#8bf7ff" stroke-width="1.2" opacity=".42"/>
             </svg>
           </div>
         </div>
@@ -1276,19 +1307,8 @@
       <!-- Envelope -->
       <section class="panel env-panel">
         <div class="panel-title"><span class="left"><span class="module-power">⏻</span>Envelope</span><span class="tiny-badge">ADSR</span></div>
-        <div class="tab-row">
+        <div class="tab-row amp-only">
           <button class="tab-btn active" type="button">Amp</button>
-          <button class="tab-btn" type="button">Filter</button>
-          <button class="tab-btn" type="button">Mod</button>
-        </div>
-        <div class="env-display" aria-hidden="true">
-          <svg viewBox="0 0 620 180" preserveAspectRatio="none">
-            <polyline points="0,160 60,30 190,54 270,90 410,118 620,145" fill="none" stroke="#28e8ff" stroke-width="4"/>
-            <polyline points="0,160 60,30 190,54 270,90 410,118 620,145" fill="none" stroke="#d8ff64" stroke-width="1" opacity=".45"/>
-            <g fill="#8bf7ff" stroke="#021017" stroke-width="3">
-              <circle cx="60" cy="30" r="8"/><circle cx="190" cy="54" r="8"/><circle cx="270" cy="90" r="8"/><circle cx="410" cy="118" r="8"/><circle cx="620" cy="145" r="8"/>
-            </g>
-          </svg>
         </div>
         <div class="control-grid four">
           <div class="knob-card compact">
@@ -1342,11 +1362,6 @@
     </section>
 
     <section class="bottom-strip">
-      <div class="wheel-panel" aria-hidden="true">
-        <div><div class="wheel-label">Pitch</div><div class="wheel"></div></div>
-        <div><div class="wheel-label">Mod</div><div class="wheel"></div></div>
-      </div>
-
       <div class="presets-panel">
         <div class="presets-header">
           <span class="presets-title">Saved Sounds</span>
@@ -1485,6 +1500,75 @@ function updateKnobVisual(id) {
   shell.style.setProperty('--pct', pct + '%');
 }
 
+function waveSample(type, phase, layerOffset = 0) {
+  const cycles = (type === 'sine' || type === 'amsine' || type === 'fmsine') ? 3 : 4;
+  const t = (phase + layerOffset + 1) % 1;
+  const c = (t * cycles) % 1;
+
+  if(type === 'sine') return Math.sin(2 * Math.PI * cycles * t);
+
+  if(type === 'triangle') {
+    return c < 0.25 ? c * 4 : c < 0.75 ? 2 - c * 4 : c * 4 - 4;
+  }
+
+  if(type === 'sawtooth') return 2 * c - 1;
+  if(type === 'square') return c < 0.5 ? 1 : -1;
+
+  if(type === 'fatsawtooth') {
+    const a = 2 * c - 1;
+    const c2 = ((t + 0.035 + layerOffset) * cycles) % 1;
+    const b = 2 * c2 - 1;
+    return (a * 0.62) + (b * 0.38);
+  }
+
+  if(type === 'fatsquare') {
+    const a = c < 0.5 ? 1 : -1;
+    const c2 = ((t + 0.04 + layerOffset) * cycles) % 1;
+    const b = c2 < 0.5 ? 1 : -1;
+    return (a * 0.7) + (b * 0.3);
+  }
+
+  if(type === 'amsine') {
+    const carrier = Math.sin(2 * Math.PI * cycles * t);
+    const amp = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(2 * Math.PI * (t * 1.15 + layerOffset)));
+    return carrier * amp;
+  }
+
+  if(type === 'fmsine') {
+    const mod = 0.32 * Math.sin(2 * Math.PI * (t * 2.1 + layerOffset));
+    return Math.sin(2 * Math.PI * (cycles * t + mod));
+  }
+
+  return Math.sin(2 * Math.PI * cycles * t);
+}
+
+function makeWavePath(type, layerOffset = 0, amp = 52, samples = 160) {
+  const w = 520;
+  const mid = 90;
+  const pts = [];
+
+  for(let i = 0; i <= samples; i++) {
+    const phase = i / samples;
+    const x = phase * w;
+    const y = mid - waveSample(type, phase, layerOffset) * amp;
+    pts.push((i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1));
+  }
+
+  return pts.join(' ');
+}
+
+function renderWavetable() {
+  const type = p.waveform || 'triangle';
+  const main = document.getElementById('wavePathMain');
+  const alt1 = document.getElementById('wavePathAlt1');
+  const alt2 = document.getElementById('wavePathAlt2');
+  if(!main || !alt1 || !alt2) return;
+
+  main.setAttribute('d', makeWavePath(type, 0, 54, 180));
+  alt1.setAttribute('d', makeWavePath(type, 0.045, 42, 180));
+  alt2.setAttribute('d', makeWavePath(type, -0.055, 34, 180));
+}
+
 function updateWaveLabel() {
   const names = {
     sine:'Sine Glass', triangle:'Aqua Triangle', sawtooth:'Bright Saw', square:'Square Current',
@@ -1492,6 +1576,7 @@ function updateWaveLabel() {
   };
   const el = document.getElementById('waveName');
   if(el) el.textContent = names[p.waveform] || 'Aqua Motion';
+  renderWavetable();
 }
 
 function updateUI() {
