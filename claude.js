@@ -3,35 +3,47 @@ exports.handler = async function(event) {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (!ANTHROPIC_API_KEY) {
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  if (!GROQ_API_KEY) {
     return { statusCode: 500, body: JSON.stringify({ error: "API key not configured" }) };
   }
 
   try {
     const body = JSON.parse(event.body);
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    // Groq uses OpenAI-compatible API — system prompt goes in messages array
+    const messages = [
+      { role: "system", content: body.system },
+      ...body.messages
+    ];
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
+        "Authorization": `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: body.model || "claude-sonnet-4-20250514",
-        max_tokens: body.max_tokens || 1000,
-        system: body.system,
-        messages: body.messages
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 1000,
+        temperature: 0.7,
+        messages
       })
     });
 
     const data = await response.json();
 
+    // Normalize Groq response to match the shape the frontend expects
+    // Frontend reads: data.content[0].text
+    const text = data.choices?.[0]?.message?.content || "";
+    const normalized = {
+      content: [{ type: "text", text }]
+    };
+
     return {
       statusCode: response.status,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify(normalized)
     };
   } catch (err) {
     return {
