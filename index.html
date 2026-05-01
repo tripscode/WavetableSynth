@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Wavetable Synth</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #c8f06e;
+      --accent-dim: #8ab040;
+      --bg: #0d0d0d;
+      --bg1: #111111;
+      --bg2: #161616;
+      --bg3: #1c1c1c;
+      --border: #252525;
+      --border2: #333;
+      --text: #e8e8e0;
+      --muted: #666;
+      --muted2: #444;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px 16px 60px;
+    }
+
+    .app {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header { margin-bottom: 24px; }
+    .header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .header p { font-size: .68rem; color: var(--muted); letter-spacing: .06em; margin-top: 3px; }
+
+    /* ── Prompt ── */
+    .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    textarea {
+      flex: 1;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: .82rem;
+      padding: 10px 12px;
+      resize: none;
+      height: 52px;
+      outline: none;
+      transition: border-color .15s;
+      line-height: 1.4;
+    }
+    textarea:focus { border-color: var(--accent); }
+
+    /* ── Buttons ── */
+    .btn-ai {
+      background: var(--accent);
+      color: #0d0d0d;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 0 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-ai:hover { opacity: .85; }
+    .btn-ai:active { transform: scale(.97); }
+    .btn-ai:disabled { opacity: .35; cursor: not-allowed; }
+
+    .btn-sec {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      font-size: .65rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .btn-sec:hover { background: var(--bg3); border-color: var(--border2); color: var(--text); }
+    .btn-sec.active { border-color: var(--accent-dim); color: var(--accent); }
+
+    .btn-save {
+      background: transparent;
+      border: 1px solid var(--accent-dim);
+      border-radius: 7px;
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: .65rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .btn-save:hover { background: #1e2a0f; }
+    .btn-save:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* ── Status & name ── */
+    .status-bar {
+      font-size: .68rem;
+      color: var(--muted);
+      letter-spacing: .04em;
+      min-height: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: #333; flex-shrink: 0; }
+    .dot.thinking { background: #f0a040; animation: pulse 1s infinite; }
+    .dot.ok { background: var(--accent); }
+    .dot.err { background: #f06060; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    .sound-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 28px;
+      margin-bottom: 14px;
+    }
+    .sound-name {
+      font-size: .82rem;
+      color: var(--accent);
+      letter-spacing: .05em;
+      font-weight: 700;
+    }
+
+    /* ── AI Reasoning box ── */
+    .reasoning-box {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent-dim);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .reasoning-box.visible { display: block; }
+    .reasoning-label {
+      font-size: .6rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 6px;
+    }
+    .reasoning-text {
+      font-size: .75rem;
+      color: #aaa;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    /* ── Section labels ── */
+    .sec-label {
+      font-size: .6rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 8px;
+      margin-top: 18px;
+    }
+
+    /* ── Controls grid ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+    .ctrl {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .ctrl-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .6rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    .ctrl-val { color: var(--accent); font-weight: 700; }
+
+    input[type=range] {
+      width: 100%;
+      appearance: none;
+      height: 3px;
+      background: #2a2a2a;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: .78rem;
+      padding: 5px 7px;
+      outline: none;
+    }
+
+    /* ── FX Toggles ── */
+    .toggle-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .tog {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      font-size: .62rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tog.on { background: #1e2a0f; border-color: var(--accent-dim); color: var(--accent); }
+
+    /* ── Keyboard ── */
+    .keyboard { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+    .key {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #888;
+      font-family: 'Courier New', monospace;
+      font-size: .62rem;
+      letter-spacing: .03em;
+      padding: 9px 8px;
+      cursor: pointer;
+      transition: background .1s, transform .08s;
+      user-select: none;
+      min-width: 34px;
+      text-align: center;
+    }
+    .key:hover { background: #222; border-color: #444; color: var(--text); }
+    .key.active { background: var(--accent); color: #0d0d0d; border-color: var(--accent); transform: scale(.93); }
+
+    /* ── Action row ── */
+    .action-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 18px; }
+
+    /* ── Presets panel ── */
+    .presets-panel {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 4px;
+    }
+    .presets-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .presets-title {
+      font-size: .6rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted2);
+    }
+    .presets-empty {
+      font-size: .72rem;
+      color: var(--muted2);
+      padding: 20px 0;
+      text-align: center;
+      letter-spacing: .04em;
+    }
+    .preset-list { display: flex; flex-direction: column; gap: 6px; }
+    .preset-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      transition: border-color .12s;
+    }
+    .preset-item:hover { border-color: var(--border2); }
+    .preset-item.loaded { border-color: var(--accent-dim); }
+    .preset-info { flex: 1; min-width: 0; }
+    .preset-name {
+      font-size: .75rem;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: .03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preset-desc {
+      font-size: .62rem;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preset-actions { display: flex; gap: 5px; flex-shrink: 0; }
+    .preset-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      font-size: .58rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      cursor: pointer;
+      transition: all .1s;
+      white-space: nowrap;
+    }
+    .preset-btn:hover { border-color: var(--border2); color: var(--text); }
+    .preset-btn.load:hover { border-color: var(--accent-dim); color: var(--accent); }
+    .preset-btn.del:hover { border-color: #f06060; color: #f06060; }
+
+    /* ── Save modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 24px;
+      width: 340px;
+      max-width: 90vw;
+    }
+    .modal h3 {
+      font-size: .85rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .modal input[type=text] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: .82rem;
+      padding: 9px 12px;
+      outline: none;
+      margin-bottom: 10px;
+      transition: border-color .15s;
+    }
+    .modal input[type=text]:focus { border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+    /* ── JSON output ── */
+    .json-out {
+      background: #080808;
+      border: 1px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: .68rem;
+      color: #4a7a30;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 520px) {
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>AI Wavetable Synth</h1>
+    <p>describe a sound — ai reasons through it and tunes the engine for you</p>
+  </div>
+
+  <!-- Prompt -->
+  <div class="input-row">
+    <textarea id="prompt" placeholder="try: warm ambient pad, deep sub bass, dreamy pluck, bright bell, lo-fi keys..."></textarea>
+    <button class="btn-ai" id="generateBtn">Generate</button>
+  </div>
+  <div class="status-bar"><div class="dot" id="dot"></div><span id="statusText">ready</span></div>
+
+  <!-- Sound name + save button -->
+  <div class="sound-meta">
+    <div class="sound-name" id="soundName"></div>
+    <button class="btn-save" id="saveBtn" disabled>+ Save Preset</button>
+  </div>
+
+  <!-- AI Reasoning -->
+  <div class="reasoning-box" id="reasoningBox">
+    <div class="reasoning-label">AI reasoning</div>
+    <div class="reasoning-text" id="reasoningText"></div>
+  </div>
+
+  <!-- Oscillator -->
+  <div class="sec-label">Oscillator</div>
+  <div class="grid-3">
+    <div class="ctrl">
+      <div class="ctrl-label">Waveform <span class="ctrl-val" id="waveformValue">triangle</span></div>
+      <select id="waveform">
+        <option value="sine">sine</option>
+        <option value="triangle" selected>triangle</option>
+        <option value="sawtooth">sawtooth</option>
+        <option value="square">square</option>
+        <option value="fatsawtooth">fat saw</option>
+        <option value="fatsquare">fat square</option>
+        <option value="amsine">AM sine</option>
+        <option value="fmsine">FM sine</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Detune <span class="ctrl-val" id="detuneValue">0</span> ct</div>
+      <input id="detune" type="range" min="-50" max="50" step="1" value="0"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Filter <span class="ctrl-val" id="filterCutoffValue">3000</span> Hz</div>
+      <input id="filterCutoff" type="range" min="80" max="12000" step="10" value="3000"/>
+    </div>
+  </div>
+
+  <!-- Envelope -->
+  <div class="sec-label">Envelope (ADSR)</div>
+  <div class="grid-3">
+    <div class="ctrl">
+      <div class="ctrl-label">Attack <span class="ctrl-val" id="attackValue">0.010</span>s</div>
+      <input id="attack" type="range" min="0.001" max="3" step="0.001" value="0.01"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Decay <span class="ctrl-val" id="decayValue">0.40</span>s</div>
+      <input id="decay" type="range" min="0.01" max="3" step="0.01" value="0.4"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Sustain <span class="ctrl-val" id="sustainValue">0.20</span></div>
+      <input id="sustain" type="range" min="0" max="1" step="0.01" value="0.2"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Release <span class="ctrl-val" id="releaseValue">0.30</span>s</div>
+      <input id="release" type="range" min="0.01" max="6" step="0.01" value="0.3"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Filter Res <span class="ctrl-val" id="filterQValue">1.0</span></div>
+      <input id="filterQ" type="range" min="0.1" max="20" step="0.1" value="1"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Volume <span class="ctrl-val" id="volumeValue">-6</span> dB</div>
+      <input id="volume" type="range" min="-30" max="0" step="1" value="-6"/>
+    </div>
+  </div>
+
+  <!-- Effects -->
+  <div class="sec-label">Effects</div>
+  <div class="toggle-row">
+    <button class="tog" id="togReverb"      onclick="toggleFX('reverb')">Reverb</button>
+    <button class="tog" id="togDelay"       onclick="toggleFX('delay')">Delay</button>
+    <button class="tog" id="togChorus"      onclick="toggleFX('chorus')">Chorus</button>
+    <button class="tog" id="togDistortion"  onclick="toggleFX('distortion')">Distortion</button>
+  </div>
+  <div class="grid-2">
+    <div class="ctrl">
+      <div class="ctrl-label">Reverb decay <span class="ctrl-val" id="reverbDecayValue">2.50</span>s</div>
+      <input id="reverbDecay" type="range" min="0.1" max="10" step="0.1" value="2.5"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Reverb wet <span class="ctrl-val" id="reverbWetValue">0.40</span></div>
+      <input id="reverbWet" type="range" min="0" max="1" step="0.01" value="0.4"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Delay time <span class="ctrl-val" id="delayTimeValue">0.25</span>s</div>
+      <input id="delayTime" type="range" min="0.05" max="1" step="0.01" value="0.25"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Delay feedback <span class="ctrl-val" id="delayFeedbackValue">0.35</span></div>
+      <input id="delayFeedback" type="range" min="0" max="0.9" step="0.01" value="0.35"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Chorus depth <span class="ctrl-val" id="chorusDepthValue">0.50</span></div>
+      <input id="chorusDepth" type="range" min="0" max="1" step="0.01" value="0.5"/>
+    </div>
+    <div class="ctrl">
+      <div class="ctrl-label">Distortion <span class="ctrl-val" id="distortionAmtValue">0.30</span></div>
+      <input id="distortionAmt" type="range" min="0" max="1" step="0.01" value="0.3"/>
+    </div>
+  </div>
+
+  <!-- Keyboard -->
+  <div class="sec-label">Keyboard</div>
+  <div class="keyboard" id="keyboard"></div>
+
+  <div class="action-row">
+    <button class="btn-sec" id="playBtn">Play C4</button>
+    <button class="btn-sec" id="randomBtn">Randomize</button>
+    <button class="btn-sec" id="holdBtn">Hold</button>
+  </div>
+
+  <!-- Presets -->
+  <div class="sec-label">Presets</div>
+  <div class="presets-panel">
+    <div class="presets-header">
+      <span class="presets-title">Saved sounds</span>
+      <span id="presetCount" style="font-size:.62rem;color:var(--muted);letter-spacing:.04em">0 saved</span>
+    </div>
+    <div id="presetList"><div class="presets-empty">No presets yet — generate a sound and save it</div></div>
+  </div>
+
+  <!-- JSON -->
+  <div class="sec-label">Current params</div>
+  <div class="json-out" id="jsonOutput"></div>
+</div>
+
+<!-- Save modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3>Save Preset</h3>
+    <input type="text" id="presetNameInput" placeholder="Name your sound..." maxlength="40"/>
+    <input type="text" id="presetDescInput" placeholder="Optional description..." maxlength="80"/>
+    <div class="modal-actions">
+      <button class="btn-sec" id="modalCancel">Cancel</button>
+      <button class="btn-ai" id="modalConfirm">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────── NOTES / KEYBOARD ─────────────────────── */
+const NOTES = [
+  {n:'C3',k:'Z'},{n:'D3',k:'X'},{n:'E3',k:'C'},{n:'F3',k:'V'},{n:'G3',k:'B'},
+  {n:'A3',k:'N'},{n:'B3',k:'M'},{n:'C4',k:'A'},{n:'D4',k:'S'},{n:'E4',k:'D'},
+  {n:'F4',k:'F'},{n:'G4',k:'G'},{n:'A4',k:'H'},{n:'B4',k:'J'},{n:'C5',k:'K'}
+];
+
+const kb = document.getElementById('keyboard');
+NOTES.forEach(({n,k}) => {
+  const b = document.createElement('button');
+  b.className = 'key';
+  b.dataset.note = n;
+  b.textContent = n;
+  b.title = `Key: ${k}`;
+  kb.appendChild(b);
+});
+
+/* ─────────────────────────── AUDIO ENGINE ──────────────────────────── */
+let synth, reverb, delay, chorus, distortion, vol, filterNode;
+let holdMode = false;
+let heldNotes = [];
+
+const fxState = { reverb:false, delay:false, chorus:false, distortion:false };
+
+const p = {
+  waveform:'triangle', detune:0,
+  attack:0.01, decay:0.4, sustain:0.2, release:0.3,
+  filterCutoff:3000, filterQ:1, volume:-6,
+  reverbDecay:2.5, reverbWet:0.4,
+  delayTime:0.25, delayFeedback:0.35,
+  chorusDepth:0.5, distortionAmt:0.3
+};
+
+function clamp(v,a,b){ return Math.min(Math.max(v,a),b); }
+
+function buildChain() {
+  if(synth)       { try { synth.dispose(); }       catch(e){} }
+  if(reverb)      { try { reverb.dispose(); }      catch(e){} }
+  if(delay)       { try { delay.dispose(); }       catch(e){} }
+  if(chorus)      { try { chorus.dispose(); }      catch(e){} }
+  if(distortion)  { try { distortion.dispose(); }  catch(e){} }
+  if(vol)         { try { vol.dispose(); }         catch(e){} }
+  if(filterNode)  { try { filterNode.dispose(); }  catch(e){} }
+
+  vol        = new Tone.Volume(p.volume).toDestination();
+  reverb     = new Tone.Reverb({ decay:p.reverbDecay, wet: fxState.reverb ? p.reverbWet : 0 }).connect(vol);
+  delay      = new Tone.FeedbackDelay({ delayTime:p.delayTime, feedback:p.delayFeedback, wet: fxState.delay ? 0.5 : 0 }).connect(reverb);
+  chorus     = new Tone.Chorus({ depth:p.chorusDepth*40, frequency:3, delayTime:3.5, wet: fxState.chorus ? 0.5 : 0 }).connect(delay).start();
+  distortion = new Tone.Distortion({ distortion:p.distortionAmt, wet: fxState.distortion ? 0.6 : 0 }).connect(chorus);
+  filterNode = new Tone.Filter(p.filterCutoff, 'lowpass').set({ Q:p.filterQ }).connect(distortion);
+
+  synth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type:p.waveform, detune:p.detune },
+    envelope:   { attack:p.attack, decay:p.decay, sustain:p.sustain, release:p.release }
+  }).connect(filterNode);
+}
+
+function updateSynth() {
+  if(!synth) return;
+  synth.set({
+    oscillator: { type:p.waveform, detune:p.detune },
+    envelope:   { attack:p.attack, decay:p.decay, sustain:p.sustain, release:p.release }
+  });
+  filterNode.frequency.value = p.filterCutoff;
+  filterNode.Q.value = p.filterQ;
+  reverb.set({ decay:p.reverbDecay, wet: fxState.reverb ? p.reverbWet : 0 });
+  delay.set({ delayTime:p.delayTime, feedback:p.delayFeedback, wet: fxState.delay ? 0.5 : 0 });
+  chorus.set({ depth:p.chorusDepth*40, wet: fxState.chorus ? 0.5 : 0 });
+  distortion.set({ distortion:p.distortionAmt, wet: fxState.distortion ? 0.6 : 0 });
+  vol.set({ volume:p.volume });
+}
+
+/* ─────────────────────────── UI SYNC ───────────────────────────────── */
+const SLIDER_IDS = [
+  'detune','attack','decay','sustain','release',
+  'filterCutoff','filterQ','volume',
+  'reverbDecay','reverbWet','delayTime','delayFeedback',
+  'chorusDepth','distortionAmt'
+];
+
+function fmt(id, val) {
+  if(['attack','decay','release'].includes(id))           return Number(val).toFixed(3);
+  if(['sustain','reverbWet','delayFeedback',
+      'chorusDepth','distortionAmt','reverbDecay',
+      'delayTime'].includes(id))                          return Number(val).toFixed(2);
+  if(id === 'filterQ')                                    return Number(val).toFixed(1);
+  return String(val);
+}
+
+function updateUI() {
+  document.getElementById('waveform').value = p.waveform;
+  document.getElementById('waveformValue').textContent = p.waveform;
+  SLIDER_IDS.forEach(id => {
+    document.getElementById(id).value = p[id];
+    document.getElementById(id+'Value').textContent = fmt(id, p[id]);
+  });
+  document.getElementById('jsonOutput').textContent =
+    JSON.stringify({ ...p, fx: fxState }, null, 2);
+}
+
+function applyParams(np, name, reasoning) {
+  const waveforms = ['sine','triangle','sawtooth','square','fatsawtooth','fatsquare','amsine','fmsine'];
+  if(np.waveform && waveforms.includes(np.waveform)) p.waveform = np.waveform;
+
+  const ranges = {
+    detune:[-50,50], attack:[0.001,3], decay:[0.01,3], sustain:[0,1], release:[0.01,6],
+    filterCutoff:[80,12000], filterQ:[0.1,20], volume:[-30,0],
+    reverbDecay:[0.1,10], reverbWet:[0,1], delayTime:[0.05,1], delayFeedback:[0,0.9],
+    chorusDepth:[0,1], distortionAmt:[0,1]
+  };
+  SLIDER_IDS.forEach(k => {
+    if(np[k] != null) p[k] = clamp(Number(np[k]), ranges[k][0], ranges[k][1]);
+  });
+
+  if(np.fx) {
+    Object.keys(fxState).forEach(k => { if(np.fx[k] != null) fxState[k] = !!np.fx[k]; });
+    syncToggleUI();
+  }
+
+  updateSynth();
+  updateUI();
+
+  if(name) {
+    document.getElementById('soundName').textContent = name;
+    document.getElementById('saveBtn').disabled = false;
+  }
+
+  // Show reasoning
+  const rb = document.getElementById('reasoningBox');
+  const rt = document.getElementById('reasoningText');
+  if(reasoning) {
+    rt.textContent = reasoning;
+    rb.classList.add('visible');
+  } else {
+    rb.classList.remove('visible');
+  }
+}
+
+function syncToggleUI() {
+  Object.keys(fxState).forEach(k => {
+    const id = 'tog' + k.charAt(0).toUpperCase() + k.slice(1);
+    document.getElementById(id)?.classList.toggle('on', fxState[k]);
+  });
+}
+
+function toggleFX(name) {
+  fxState[name] = !fxState[name];
+  syncToggleUI();
+  updateSynth();
+  updateUI();
+}
+
+/* ─────────────────────────── STATUS ────────────────────────────────── */
+function setStatus(state, msg) {
+  const dot = document.getElementById('dot');
+  dot.className = 'dot' + (state ? ' '+state : '');
+  document.getElementById('statusText').textContent = msg;
+}
+
+/* ─────────────────────────── AUDIO PLAY ────────────────────────────── */
+async function ensureAudio() {
+  await Tone.start();
+  if(!synth) buildChain();
+}
+
+async function playNote(note = 'C4') {
+  await ensureAudio();
+  if(holdMode) {
+    if(heldNotes.length) { synth.triggerRelease(heldNotes); heldNotes = []; }
+    heldNotes = [note];
+    synth.triggerAttack(note);
+  } else {
+    const dur = Math.max(0.6, p.attack + p.decay + 0.3);
+    synth.triggerAttackRelease(note, dur+'');
+  }
+  document.querySelectorAll('.key').forEach(k =>
+    k.classList.toggle('active', k.dataset.note === note));
+  setTimeout(() =>
+    document.querySelectorAll('.key').forEach(k => k.classList.remove('active')), 280);
+}
+
+/* ─────────────────────────── CLAUDE API ────────────────────────────── */
+async function callClaude(userPrompt) {
+  const systemPrompt = `You are an expert synthesizer sound designer helping beginners learn synthesis. When a user describes a sound, you will:
+
+1. REASON through what makes that sound (write 2-4 sentences explaining your thinking in plain language a beginner can understand — what waveform suits it and why, what the envelope should do, which effects help)
+2. OUTPUT the parameters as JSON
+
+Respond ONLY with this exact structure — a JSON object with a "reasoning" string and a "params" object:
+{
+  "reasoning": "plain english explanation of your sound design choices...",
+  "params": {
+    "name": "short friendly sound name",
+    "waveform": "sine"|"triangle"|"sawtooth"|"square"|"fatsawtooth"|"fatsquare"|"amsine"|"fmsine",
+    "detune": number -50 to 50,
+    "attack": number 0.001–3,
+    "decay": number 0.01–3,
+    "sustain": number 0–1,
+    "release": number 0.01–6,
+    "filterCutoff": number 80–12000,
+    "filterQ": number 0.1–20,
+    "volume": number -30 to 0,
+    "reverbDecay": number 0.1–10,
+    "reverbWet": number 0–1,
+    "delayTime": number 0.05–1,
+    "delayFeedback": number 0–0.9,
+    "chorusDepth": number 0–1,
+    "distortionAmt": number 0–1,
+    "fx": {
+      "reverb": boolean,
+      "delay": boolean,
+      "chorus": boolean,
+      "distortion": boolean
+    }
+  }
+}
+
+Sound design reference:
+- Ambient/pad: long attack 1.5-2.5s, high sustain, long release 3-5s, fatsawtooth, reverb ON (wet 0.6-0.8, decay 5-8s), chorus ON
+- Dreamy pluck: short attack, fast decay, low sustain, triangle, reverb ON, delay ON (time 0.3-0.5s, feedback 0.4)
+- Deep bass: square or fatsquare, short attack, high sustain, filterCutoff 200-600, filterQ 3-8, no reverb
+- Bell: sine, very short attack 0.001, medium decay 0.6-1s, zero sustain, reverb ON, filterCutoff 6000-10000
+- Lo-fi keys: triangle, short attack, medium decay, slight chorus, filterCutoff 800-2000, filterQ 4-8, slight distortion
+- Lead synth: sawtooth or fatsawtooth, fast attack, chorus ON, filterCutoff 2000-5000, delay optional
+- Laser/zap: sawtooth, attack 0.001, decay 0.1, sustain 0, release 0.05, filterCutoff 8000+, no fx
+- Strings: fatsawtooth, slow attack 0.4-0.8s, high sustain, long release, chorus ON, reverb ON
+- Choir/vocal: fmsine, slow attack, high sustain, chorus ON, reverb ON (high wet), filterCutoff 1000-3000
+- Organ: fmsine or amsine, medium attack, sustain 0.8-1, slight chorus
+
+Respond ONLY with the JSON object — no markdown, no extra text.`;
+
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role:'user', content: userPrompt }]
+    })
+  });
+  if(!res.ok) throw new Error('API ' + res.status);
+  const data = await res.json();
+  const text = data.content.map(b => b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+  return JSON.parse(text);
+}
+
+/* ─────────────────────────── GENERATE ──────────────────────────────── */
+async function generate() {
+  const prompt = document.getElementById('prompt').value.trim();
+  if(!prompt) return;
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('soundName').textContent = '';
+  document.getElementById('reasoningBox').classList.remove('visible');
+  setStatus('thinking', 'AI is thinking...');
+
+  try {
+    const result = await callClaude(prompt);
+    applyParams(result.params, result.params.name, result.reasoning);
+    setStatus('ok', 'sound ready');
+    await playNote('C4');
+  } catch(e) {
+    setStatus('err', 'using fallback (no API connection)');
+    const fb = fallback(prompt);
+    applyParams(fb, fb.name, null);
+    await playNote('C4');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ─────────────────────────── FALLBACK ──────────────────────────────── */
+function fallback(text) {
+  const t = text.toLowerCase();
+  const r = {
+    name:'custom', waveform:'triangle', detune:0,
+    attack:0.05, decay:0.5, sustain:0.3, release:0.4,
+    filterCutoff:3000, filterQ:1, volume:-6,
+    reverbDecay:2.5, reverbWet:0.4, delayTime:0.25,
+    delayFeedback:0.35, chorusDepth:0.5, distortionAmt:0.3,
+    fx:{ reverb:false, delay:false, chorus:false, distortion:false }
+  };
+  if(t.includes('pad')||t.includes('ambient'))  { Object.assign(r,{name:'ambient pad',waveform:'fatsawtooth',attack:2,decay:1,sustain:0.8,release:4,filterCutoff:1200,reverbDecay:6,reverbWet:0.7,chorusDepth:0.6}); r.fx.reverb=true; r.fx.chorus=true; }
+  else if(t.includes('bass'))                    { Object.assign(r,{name:'bass',waveform:'square',attack:0.02,decay:0.3,sustain:0.7,release:0.2,filterCutoff:500,filterQ:5}); }
+  else if(t.includes('pluck')||t.includes('string')) { Object.assign(r,{name:'pluck',waveform:'triangle',attack:0.005,decay:0.3,sustain:0.1,release:0.3,filterCutoff:3500,reverbWet:0.4,delayTime:0.3,delayFeedback:0.3}); r.fx.reverb=true; r.fx.delay=true; }
+  else if(t.includes('bell'))                    { Object.assign(r,{name:'bell',waveform:'sine',attack:0.001,decay:0.8,sustain:0,release:1.5,filterCutoff:8000,reverbWet:0.5}); r.fx.reverb=true; }
+  else if(t.includes('laser')||t.includes('zap')){ Object.assign(r,{name:'laser',waveform:'sawtooth',attack:0.001,decay:0.1,sustain:0,release:0.05,filterCutoff:10000}); }
+  return r;
+}
+
+/* ─────────────────────────── PRESETS ───────────────────────────────── */
+const STORAGE_KEY = 'aisynth_presets';
+let presets = [];
+let loadedPresetId = null;
+
+function loadPresetsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    presets = raw ? JSON.parse(raw) : [];
+  } catch(e) { presets = []; }
+}
+
+function savePresetsToStorage() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(presets)); } catch(e) {}
+}
+
+function renderPresets() {
+  const list = document.getElementById('presetList');
+  const count = document.getElementById('presetCount');
+  count.textContent = presets.length + ' saved';
+
+  if(!presets.length) {
+    list.innerHTML = '<div class="presets-empty">No presets yet — generate a sound and save it</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  const ul = document.createElement('div');
+  ul.className = 'preset-list';
+
+  presets.forEach(preset => {
+    const item = document.createElement('div');
+    item.className = 'preset-item' + (preset.id === loadedPresetId ? ' loaded' : '');
+
+    item.innerHTML = `
+      <div class="preset-info">
+        <div class="preset-name">${escHtml(preset.name)}</div>
+        <div class="preset-desc">${escHtml(preset.description || preset.params.waveform + ' · ' + (preset.params.fx?.reverb?'reverb ':'') + (preset.params.fx?.delay?'delay ':'') + (preset.params.fx?.chorus?'chorus ':'') + (preset.params.fx?.distortion?'dist':''))}</div>
+      </div>
+      <div class="preset-actions">
+        <button class="preset-btn load" data-id="${preset.id}">Load</button>
+        <button class="preset-btn del"  data-id="${preset.id}">Delete</button>
+      </div>
+    `;
+    ul.appendChild(item);
+  });
+
+  list.appendChild(ul);
+
+  list.querySelectorAll('.preset-btn.load').forEach(btn => {
+    btn.addEventListener('click', () => loadPreset(btn.dataset.id));
+  });
+  list.querySelectorAll('.preset-btn.del').forEach(btn => {
+    btn.addEventListener('click', () => deletePreset(btn.dataset.id));
+  });
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadPreset(id) {
+  const preset = presets.find(p => p.id === id);
+  if(!preset) return;
+  loadedPresetId = id;
+  applyParams(preset.params, preset.name, preset.reasoning || null);
+  if(preset.params.fx) {
+    Object.assign(fxState, preset.params.fx);
+    syncToggleUI();
+  }
+  updateSynth();
+  setStatus('ok', 'preset loaded: ' + preset.name);
+  renderPresets();
+  playNote('C4');
+}
+
+function deletePreset(id) {
+  presets = presets.filter(p => p.id !== id);
+  if(loadedPresetId === id) loadedPresetId = null;
+  savePresetsToStorage();
+  renderPresets();
+}
+
+/* Save modal */
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const name = document.getElementById('soundName').textContent || '';
+  document.getElementById('presetNameInput').value = name;
+  document.getElementById('presetDescInput').value = '';
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('presetNameInput').focus();
+});
+
+document.getElementById('modalCancel').addEventListener('click', closeModal);
+document.getElementById('modalBackdrop').addEventListener('click', e => {
+  if(e.target === document.getElementById('modalBackdrop')) closeModal();
+});
+
+document.getElementById('modalConfirm').addEventListener('click', savePreset);
+document.getElementById('presetNameInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') savePreset();
+  if(e.key === 'Escape') closeModal();
+});
+
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+}
+
+function savePreset() {
+  const name = document.getElementById('presetNameInput').value.trim() || 'Untitled';
+  const description = document.getElementById('presetDescInput').value.trim();
+  const reasoning = document.getElementById('reasoningText').textContent || '';
+
+  const preset = {
+    id: Date.now().toString(),
+    name,
+    description,
+    reasoning,
+    savedAt: new Date().toISOString(),
+    params: {
+      ...JSON.parse(JSON.stringify(p)),
+      fx: { ...fxState }
+    }
+  };
+
+  presets.unshift(preset);
+  loadedPresetId = preset.id;
+  savePresetsToStorage();
+  renderPresets();
+  closeModal();
+  setStatus('ok', 'saved: ' + name);
+}
+
+/* ─────────────────────────── RANDOMIZE ─────────────────────────────── */
+function randomizeParams() {
+  const ws = ['sine','triangle','sawtooth','square','fatsawtooth','fatsquare','amsine','fmsine'];
+  applyParams({
+    waveform: ws[Math.floor(Math.random()*ws.length)],
+    attack:   Math.random()*1.5,
+    decay:    0.05 + Math.random()*2,
+    sustain:  Math.random(),
+    release:  0.05 + Math.random()*3,
+    filterCutoff: 200 + Math.random()*8000,
+    filterQ:  0.5 + Math.random()*8,
+    detune:   (Math.random()-.5)*40,
+    volume:   -14 + Math.random()*8,
+    reverbDecay: 1 + Math.random()*6,
+    reverbWet:   Math.random(),
+    delayTime:   0.1 + Math.random()*0.7,
+    delayFeedback: Math.random()*0.7,
+    chorusDepth: Math.random(),
+    distortionAmt: Math.random()*0.5,
+    fx: {
+      reverb: Math.random()>.5,
+      delay:  Math.random()>.6,
+      chorus: Math.random()>.6,
+      distortion: Math.random()>.85
+    }
+  }, 'random patch', null);
+  syncToggleUI();
+}
+
+/* ─────────────────────────── EVENT WIRING ──────────────────────────── */
+document.getElementById('generateBtn').addEventListener('click', generate);
+document.getElementById('prompt').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate(); }
+});
+document.getElementById('playBtn').addEventListener('click', () => playNote('C4'));
+document.getElementById('randomBtn').addEventListener('click', async () => {
+  randomizeParams(); await playNote('C4');
+});
+document.getElementById('holdBtn').addEventListener('click', function() {
+  holdMode = !holdMode;
+  this.classList.toggle('active', holdMode);
+  if(!holdMode && heldNotes.length && synth) {
+    synth.triggerRelease(heldNotes);
+    heldNotes = [];
+  }
+});
+
+document.querySelectorAll('.key').forEach(btn => {
+  btn.addEventListener('click', () => playNote(btn.dataset.note));
+});
+
+SLIDER_IDS.forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    p[id] = Number(e.target.value);
+    updateSynth(); updateUI();
+  });
+});
+
+document.getElementById('waveform').addEventListener('input', e => {
+  p.waveform = e.target.value;
+  buildChain(); updateUI();
+});
+
+document.addEventListener('keydown', async e => {
+  if(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  const note = NOTES.find(n => n.k === e.key.toUpperCase());
+  if(note && !e.repeat) await playNote(note.n);
+});
+
+/* ─────────────────────────── INIT ──────────────────────────────────── */
+loadPresetsFromStorage();
+renderPresets();
+updateUI();
+</script>
+</body>
+</html>
