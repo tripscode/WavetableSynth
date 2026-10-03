@@ -1,0 +1,93 @@
+/* Rotary knob. A transparent range input sits on top of the drawn knob and
+   handles dragging; KnobView sets --deg (face rotation) and --pct (how much
+   of the ring is lit) from the input's value. */
+
+.knob-card {
+  min-height: 130px;
+  padding: 11px;
+  text-align: center;
+}
+
+.knob-card.large { min-height: 175px; }
+.knob-card.compact { min-height: 110px; padding: 10px; }
+.knob-card .knob-head { margin-bottom: 4px; text-align: left; }
+
+.knob-shell {
+  --deg: -135deg;
+  --pct: 0%;
+  position: relative;
+  width: 86px;
+  height: 86px;
+  margin: 8px auto 5px;
+  border-radius: 50%;
+}
+.knob-card.large .knob-shell { width: 112px; height: 112px; }
+.knob-card.compact .knob-shell { width: 72px; height: 72px; }
+
+.knob-shell input[type=range] {
+  position: absolute;
+  inset: -7px;
+  width: calc(100% + 14px);
+  height: calc(100% + 14px);
+  opacity: 0;
+  cursor: grab;
+  z-index: 3;
+}
+.knob-shell input[type=range]:active { cursor: grabbing; }
+
+.knob-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 225deg, var(--lime) 0 var(--pct), rgba(40,232,255,.22) var(--pct) 75%, transparent 75% 100%);
+  box-shadow: 0 0 16px rgba(40,232,255,.23), inset 0 1px 8px rgba(255,255,255,.2);
+}
+.knob-ring::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #052333;
+  box-shadow: inset 0 0 12px rgba(0,0,0,.55);
+}
+
+.knob-face {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 18%, rgba(255,255,255,.9), rgba(255,255,255,.24) 16%, transparent 17%),
+    linear-gradient(145deg, #d8eef4 0%, #7d9aa3 33%, #1c3d48 63%, #b7d4dc 100%);
+  border: 1px solid rgba(255,255,255,.46);
+  box-shadow:
+    inset 0 3px 4px rgba(255,255,255,.28),
+    inset 0 -12px 15px rgba(0,0,0,.42),
+    0 7px 10px rgba(0,0,0,.42);
+  transform: rotate(var(--deg));
+  transition: transform .06s linear;
+  z-index: 2;
+}
+
+.knob-card.large .knob-face { inset: 16px; }
+.knob-card.compact .knob-face { inset: 10px; }
+
+.knob-face::before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 25%;
+  border-radius: 99px;
+  top: 8px;
+  left: calc(50% - 2px);
+  background: #eaffff;
+  box-shadow: 0 0 8px rgba(40,232,255,.86);
+}
+
+.knob-label-bottom {
+  font-size: .67rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(223,250,255,.76);
+  font-weight: 800;
+}

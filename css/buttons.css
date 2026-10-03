@@ -1,0 +1,101 @@
+/* Shared button skin and states.
+   Load this before the component stylesheets: components refine these
+   buttons, and the .active/.on states below must win ties with :hover. */
+
+.round-mini,
+.utility-btn,
+.btn-sec,
+.preset-btn,
+.tog,
+.tab-btn,
+.pill,
+.keyboard .key {
+  border: 1px solid rgba(150,238,255,.34);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.03) 38%, rgba(0,0,0,.22)),
+    rgba(0,25,37,.72);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 4px 10px rgba(0,0,0,.22);
+  color: #dffaff;
+  cursor: pointer;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.round-mini:hover,
+.utility-btn:hover,
+.btn-sec:hover,
+.preset-btn:hover,
+.tog:hover,
+.tab-btn:hover,
+.pill:hover,
+.keyboard .key:hover {
+  border-color: rgba(216,255,100,.65);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 0 18px rgba(40,232,255,.18), 0 5px 12px rgba(0,0,0,.26);
+}
+
+.round-mini:active,
+.utility-btn:active,
+.btn-sec:active,
+.preset-btn:active,
+.tog:active,
+.tab-btn:active,
+.pill:active,
+.keyboard .key:active,
+.btn-ai:active {
+  transform: translateY(1px) scale(.98);
+}
+
+/* ── Rectangular buttons: tabs, FX toggles, secondary actions ─────────── */
+
+.tab-btn,
+.tog,
+.btn-sec {
+  min-height: 36px;
+  border-radius: 10px;
+  padding: 0 14px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 850;
+  font-size: .68rem;
+}
+
+.tab-btn.active,
+.tog.on,
+.btn-sec.active {
+  color: #001a20;
+  border-color: rgba(255,255,255,.55);
+  background:
+    radial-gradient(circle at 35% 20%, rgba(255,255,255,.7), transparent 18%),
+    linear-gradient(180deg, var(--lime), #66f17f 85%);
+  box-shadow: 0 0 15px rgba(216,255,100,.35), inset 0 1px 0 rgba(255,255,255,.46);
+  text-shadow: none;
+}
+
+.btn-sec { flex: 1; min-width: 92px; }
+
+/* ── Primary action ───────────────────────────────────────────────────── */
+
+.btn-ai {
+  width: 100%;
+  margin-top: 12px;
+  height: 56px;
+  border: 1px solid rgba(255,255,255,.56);
+  border-radius: 999px;
+  color: white;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255,255,255,.8), transparent 18%),
+    linear-gradient(180deg, #89fbff 0%, #18daf7 42%, #047b98 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.55),
+    inset 0 -8px 13px rgba(0,39,58,.42),
+    0 0 0 4px rgba(40,232,255,.12),
+    0 9px 18px rgba(0,0,0,.38),
+    0 0 22px rgba(40,232,255,.34);
+  text-shadow: 0 1px 3px rgba(0,0,0,.5);
+  font-size: 1rem;
+}
+
+.btn-ai:disabled { opacity: .5; cursor: not-allowed; }

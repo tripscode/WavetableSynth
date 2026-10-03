@@ -1,0 +1,176 @@
+/* Top bar: brand, preset selector, save button, output meter. */
+
+.brand {
+  text-align: left;
+}
+
+.brand h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.65rem);
+  line-height: .86;
+  letter-spacing: -.08em;
+  font-style: italic;
+  font-weight: 700;
+  color: #eaffff;
+  text-shadow: 0 0 20px rgba(139,247,255,.42), 0 2px 0 rgba(0,0,0,.42);
+}
+
+.brand p {
+  margin-top: 8px;
+  font-size: .72rem;
+  letter-spacing: .18em;
+  color: rgba(236,251,255,.78);
+  text-transform: uppercase;
+}
+
+/* ── Preset bar ───────────────────────────────────────────────────────── */
+
+.preset-bar {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px auto auto auto;
+  gap: 7px;
+  align-items: center;
+  max-width: none;
+  justify-self: stretch;
+  width: 100%;
+  padding: 6px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16), rgba(0,0,0,.18)),
+    rgba(1, 18, 28, .76);
+  border: 1px solid rgba(172,255,255,.38);
+  box-shadow: inset 0 1px 7px rgba(255,255,255,.14), 0 7px 18px rgba(0,0,0,.24);
+}
+
+.round-mini {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  display: grid;
+  place-items: center;
+}
+
+.preset-display {
+  min-width: 0;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(0,0,0,.42), rgba(4,36,50,.72));
+  border: 1px solid rgba(255,255,255,.12);
+  color: #aefcff;
+  letter-spacing: .04em;
+  box-shadow: inset 0 2px 12px rgba(0,0,0,.5);
+}
+
+.sound-name {
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--aqua-soft);
+  text-shadow: 0 0 10px rgba(40,232,255,.4);
+}
+
+.preset-caret { opacity: .75; }
+
+.utility-btn {
+  height: 36px;
+  border-radius: 999px;
+  padding: 0 12px;
+  font-size: .68rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.save-top {
+  border-color: rgba(216,255,100,.42);
+  color: var(--lime);
+}
+
+.save-top:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+  border-color: rgba(150,238,255,.2);
+  color: rgba(236,251,255,.5);
+}
+
+/* ── Output meter and power button (decorative) ───────────────────────── */
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: stretch;
+  justify-content: flex-end;
+}
+
+.output-meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 10px 7px 13px;
+  border-radius: 999px;
+  background: rgba(0, 20, 31, .48);
+  border: 1px solid rgba(172,255,255,.28);
+  box-shadow: inset 0 1px 8px rgba(255,255,255,.1);
+}
+
+.meter-label {
+  font-size: .58rem;
+  letter-spacing: .16em;
+  color: rgba(236,251,255,.7);
+  text-transform: uppercase;
+}
+
+.leds {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 22px;
+}
+
+.leds i {
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--lime), #3df56c);
+  box-shadow: 0 0 8px rgba(216,255,100,.55);
+  opacity: .92;
+}
+.leds i:nth-child(1) { height: 6px; }
+.leds i:nth-child(2) { height: 10px; }
+.leds i:nth-child(3) { height: 15px; }
+.leds i:nth-child(4) { height: 19px; }
+.leds i:nth-child(5) { height: 13px; }
+.leds i:nth-child(6) { height: 8px; opacity: .45; }
+
+.power-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 1px solid rgba(220,255,255,.52);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 1.55rem;
+  cursor: default;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255,255,255,.75), transparent 22%),
+    radial-gradient(circle at 50% 55%, rgba(216,255,100,.82), rgba(6,129,105,.86) 48%, rgba(2,36,42,1) 72%);
+  box-shadow: inset 0 2px 8px rgba(255,255,255,.38), 0 0 22px rgba(216,255,100,.48), 0 8px 15px rgba(0,0,0,.34);
+}
+
+@media (max-width: 760px) {
+  .preset-bar { grid-template-columns: 38px 1fr 38px; border-radius: 18px; }
+  .preset-bar .utility-btn { display: none; }
+  .top-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .brand h1 { font-size: 2rem; }
+}

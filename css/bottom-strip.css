@@ -1,0 +1,34 @@
+/* Bottom strip: the frame shared by the presets, keyboard and params
+   panels, plus the "Current Params" JSON view. */
+
+.presets-panel,
+.keyboard-panel,
+.params-panel {
+  border-radius: 22px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.1), rgba(0,0,0,.2)),
+    var(--panel);
+  border: 1px solid rgba(163, 255, 255, .34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 8px 18px rgba(0,0,0,.32);
+  overflow: hidden;
+}
+
+.params-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.params-panel .panel-title { font-size: .74rem; margin-bottom: 0; }
+.json-out {
+  flex: 1;
+  min-height: 118px;
+  border-radius: 13px;
+  padding: 10px;
+  color: rgba(145,255,115,.78);
+  background: rgba(0,0,0,.44);
+  border: 1px solid rgba(139,247,255,.16);
+  overflow: auto;
+  white-space: pre;
+  font: 600 .62rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}

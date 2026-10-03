@@ -1,0 +1,75 @@
+/* The glass module frame shared by every panel in the plugin grid. */
+
+.panel {
+  position: relative;
+  border-radius: 22px;
+  padding: 15px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.03) 20%, rgba(0,0,0,.22) 100%),
+    var(--panel);
+  border: 1px solid rgba(163, 255, 255, .38);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.33),
+    inset 0 -20px 34px rgba(0,0,0,.16),
+    0 8px 20px rgba(0,0,0,.34),
+    0 0 0 1px rgba(0,0,0,.25);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 2px 2px auto 2px;
+  height: 36%;
+  border-radius: 20px 20px 50% 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,.18), transparent);
+  opacity: .55;
+  pointer-events: none;
+}
+
+.panel > * { position: relative; z-index: 1; }
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: .92rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #e9feff;
+  font-weight: 850;
+  text-shadow: 0 0 12px rgba(40,232,255,.35);
+}
+
+.panel-title .left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.module-power {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  color: #00222a;
+  background: radial-gradient(circle at 35% 25%, #fff, var(--aqua) 45%, #07819b 82%);
+  box-shadow: 0 0 12px rgba(40,232,255,.7);
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.tiny-badge {
+  font-size: .56rem;
+  letter-spacing: .1em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #bafaff;
+  border: 1px solid rgba(139,247,255,.38);
+  background: rgba(0,0,0,.2);
+  white-space: nowrap;
+}

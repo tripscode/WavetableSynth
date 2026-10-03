@@ -1,0 +1,13 @@
+{
+  "name": "aerowave-ai",
+  "private": true,
+  "description": "AI-powered wavetable synth for learning sound design",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "netlify dev",
+    "test": "node --test"
+  }
+}
