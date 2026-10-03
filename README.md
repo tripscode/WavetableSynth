@@ -113,6 +113,8 @@ Without an API key the synth still works: Generate falls back to the built-in ke
 
 For production, deploy through Netlify and set GROQ_API_KEY in your site's environment variables.
 
+The function uses Groq's `openai/gpt-oss-120b` model by default. Groq retires models from time to time ([deprecations](https://console.groq.com/docs/deprecations)); to switch without a code change, set a `GROQ_MODEL` environment variable in Netlify and redeploy.
+
 ## Testing
 
 ```
