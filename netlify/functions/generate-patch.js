@@ -4,7 +4,7 @@
 // The system prompt lives on the server, so this endpoint only designs
 // synth patches and can't be used as a general-purpose AI proxy. The Groq
 // API key comes from the GROQ_API_KEY environment variable and never
-// reaches the browser.
+// reaches the browser. GROQ_MODEL optionally overrides the model.
 
 import { GroqClient } from '../../server/GroqClient.js';
 import { SYSTEM_PROMPT, parsePatchReply } from '../../server/patchPrompt.js';
@@ -32,12 +32,14 @@ export async function handler(event) {
   if (typeof prompt !== 'string' || !prompt.trim()) return json(400, { error: 'Missing prompt' });
 
   try {
-    const reply = await new GroqClient({ apiKey }).complete({
+    const groq = new GroqClient({ apiKey, model: process.env.GROQ_MODEL || undefined });
+    const reply = await groq.complete({
       system: SYSTEM_PROMPT,
       user: prompt.trim().slice(0, MAX_PROMPT_LENGTH),
     });
     return json(200, parsePatchReply(reply));
   } catch (err) {
+    console.error('generate-patch failed:', err.message); // shows in Netlify's function logs
     return json(502, { error: err.message });
   }
 }
