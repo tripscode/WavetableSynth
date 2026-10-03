@@ -1,0 +1,220 @@
+/* Module internals: control grids, cards, labels, the waveform select, the
+   wavetable screen, tab/toggle rows, and the master meter.
+   The rotary knob itself is in knob.css. */
+
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+.control-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.control-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* ── Cards ────────────────────────────────────────────────────────────── */
+
+.select-card,
+.knob-card,
+.mini-screen,
+.action-bank {
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.18)), rgba(0, 16, 26, .44);
+  border: 1px solid rgba(139,247,255,.22);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -12px 20px rgba(0,0,0,.16);
+}
+
+.select-card,
+.knob-card,
+.action-bank {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.select-card {
+  padding: 12px;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ── Labels and value readouts ────────────────────────────────────────── */
+
+.ctrl-label,
+.knob-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  font-size: .66rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(223,250,255,.74);
+  font-weight: 800;
+  margin-bottom: 9px;
+}
+
+.ctrl-label > span:first-child,
+.knob-head > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ctrl-val,
+.readout {
+  color: var(--lime);
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(216,255,100,.34);
+  white-space: nowrap;
+}
+
+select {
+  width: 100%;
+  height: 46px;
+  color: var(--text);
+  outline: none;
+  border-radius: 999px;
+  border: 1px solid rgba(139,247,255,.35);
+  padding: 0 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.25)),
+    #021b27;
+  box-shadow: inset 0 2px 9px rgba(0,0,0,.42);
+}
+
+/* ── Wavetable screen ─────────────────────────────────────────────────── */
+
+.mini-screen {
+  padding: 13px;
+  min-height: 164px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wave-display {
+  position: relative;
+  min-height: 112px;
+  border-radius: 13px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(40,232,255,.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(40,232,255,.08) 1px, transparent 1px),
+    radial-gradient(circle at 30% 25%, rgba(40,232,255,.23), transparent 44%),
+    #010d16;
+  background-size: 18px 18px, 18px 18px, auto, auto;
+  border: 1px solid rgba(139,247,255,.24);
+  box-shadow: inset 0 2px 20px rgba(0,0,0,.52);
+}
+
+.wave-display svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 6px rgba(40,232,255,.76));
+}
+
+.wave-caption {
+  display: flex;
+  justify-content: space-between;
+  color: var(--aqua-soft);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* ── Tab and toggle rows ──────────────────────────────────────────────── */
+
+.tab-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.tab-row.amp-only {
+  display: inline-flex;
+  max-width: 150px;
+}
+
+.toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.fx-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* ── Master meter (decorative) ────────────────────────────────────────── */
+
+.master-panel .meter-stack {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  height: 52px;
+  margin-top: 4px;
+}
+.meter-stack i {
+  align-self: flex-end;
+  width: 7px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, var(--lime), #1cdf83);
+  box-shadow: 0 0 10px rgba(216,255,100,.46);
+}
+.meter-stack i:nth-child(1) { height: 20%; }
+.meter-stack i:nth-child(2) { height: 42%; }
+.meter-stack i:nth-child(3) { height: 72%; }
+.meter-stack i:nth-child(4) { height: 88%; }
+.meter-stack i:nth-child(5) { height: 52%; opacity: .55; }
+
+/* ── Oscillator module ────────────────────────────────────────────────────
+   Two columns so labels and boxes never collide; the performance buttons
+   get their own full-width row. */
+
+.osc-panel .control-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.osc-panel .action-bank {
+  grid-column: 1 / -1;
+  min-height: auto;
+}
+
+.osc-panel .action-bank .tab-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.osc-panel .action-bank #randomBtn {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .control-grid,
+  .control-grid.two,
+  .control-grid.four,
+  .fx-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .control-grid,
+  .control-grid.two,
+  .control-grid.four,
+  .fx-controls,
+  .toggle-row { grid-template-columns: 1fr; }
+
+  .osc-panel .control-grid { grid-template-columns: 1fr; }
+  .osc-panel .action-bank { grid-column: auto; }
+  .osc-panel .action-bank .tab-row { grid-template-columns: 1fr; }
+  .osc-panel .action-bank #randomBtn { grid-column: auto; }
+}

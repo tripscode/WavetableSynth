@@ -2,7 +2,12 @@
   publish = "."
   functions = "netlify/functions"
 
+[functions]
+  # esbuild bundles each function with the modules it imports
+  # (server/ and the shared js/model/params.js).
+  node_bundler = "esbuild"
+
 [[redirects]]
-  from = "/api/claude"
-  to = "/.netlify/functions/claude"
+  from = "/api/generate-patch"
+  to = "/.netlify/functions/generate-patch"
   status = 200

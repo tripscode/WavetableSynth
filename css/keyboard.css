@@ -1,0 +1,66 @@
+/* On-screen keyboard. Keys are laid out in DOM order, with the sharps
+   (2nd, 4th, 7th, 9th, 11th, 14th) drawn short and overlapping. */
+
+.keyboard-panel {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+.keyboard {
+  height: 96px;
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  padding: 8px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #06151d, #02090d);
+  border: 1px solid rgba(255,255,255,.17);
+  box-shadow: inset 0 2px 18px rgba(0,0,0,.56);
+  overflow: hidden;
+}
+.keyboard .key {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 0;
+  border-radius: 0 0 7px 7px;
+  padding: 0;
+  color: #0c2d37;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 8px;
+  font-size: .58rem;
+  letter-spacing: .02em;
+  background: linear-gradient(180deg, #f8fdff, #b7cbd2 76%, #78949e);
+  border-color: rgba(0,0,0,.44);
+  box-shadow: inset 0 -10px 16px rgba(0,0,0,.17), inset 0 1px 0 white;
+}
+.keyboard .key:nth-child(2),
+.keyboard .key:nth-child(4),
+.keyboard .key:nth-child(7),
+.keyboard .key:nth-child(9),
+.keyboard .key:nth-child(11),
+.keyboard .key:nth-child(14) {
+  background: linear-gradient(180deg, #2a3339, #020607);
+  color: #a6dce8;
+  margin-left: -10px;
+  margin-right: -10px;
+  height: 58%;
+  z-index: 2;
+  flex-basis: 28px;
+  flex-grow: .5;
+  border-radius: 0 0 5px 5px;
+  box-shadow: inset 0 -8px 14px rgba(255,255,255,.06), 0 4px 10px rgba(0,0,0,.42);
+}
+.keyboard .key.active {
+  color: #001a20;
+  background: linear-gradient(180deg, #eaffff, #28e8ff 60%, #0394b5);
+  box-shadow: 0 0 18px rgba(40,232,255,.7), inset 0 1px 0 white;
+}
+
+@media (max-width: 760px) {
+  .keyboard { height: 84px; }
+  .keyboard .key { font-size: .5rem; }
+}

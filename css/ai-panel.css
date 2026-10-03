@@ -1,0 +1,112 @@
+/* AI Sound Designer panel: prompt box, status line, reasoning, suggestions. */
+
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-input-box {
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(0, 14, 23, .64);
+  border: 1px solid rgba(139,247,255,.3);
+  box-shadow: inset 0 2px 14px rgba(0,0,0,.4);
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 112px;
+  resize: none;
+  outline: none;
+  border: 1px solid rgba(139,247,255,.22);
+  color: #eaffff;
+  padding: 14px 15px;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 100%, rgba(40,232,255,.1), transparent 38%),
+    linear-gradient(180deg, rgba(0,0,0,.24), rgba(0,0,0,.46));
+  box-shadow: inset 0 0 18px rgba(0,0,0,.36);
+  line-height: 1.45;
+  font-size: .94rem;
+}
+
+textarea::placeholder { color: rgba(196, 238, 246, .62); font-style: italic; }
+textarea:focus { border-color: rgba(216,255,100,.7); box-shadow: inset 0 0 18px rgba(0,0,0,.36), 0 0 18px rgba(40,232,255,.18); }
+
+/* ── Status line ──────────────────────────────────────────────────────── */
+
+.status-bar {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: .78rem;
+  letter-spacing: .04em;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #316271;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,.3);
+}
+.dot.thinking { background: var(--warn); box-shadow: 0 0 13px rgba(255,215,111,.75); animation: pulse 1s infinite; }
+.dot.ok { background: var(--ok); box-shadow: 0 0 13px rgba(145,255,115,.72); }
+.dot.err { background: var(--danger); box-shadow: 0 0 13px rgba(255,108,125,.72); }
+@keyframes pulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.45; transform:scale(.76)} }
+
+/* ── AI reasoning ─────────────────────────────────────────────────────── */
+
+.reasoning-box {
+  display: none;
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid rgba(139,247,255,.28);
+  background:
+    radial-gradient(circle at 100% 88%, rgba(40,232,255,.18), transparent 32%),
+    rgba(0, 14, 23, .58);
+  box-shadow: inset 0 1px 16px rgba(0,0,0,.32);
+}
+.reasoning-box.visible { display: block; }
+.reasoning-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--aqua-soft);
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 850;
+}
+.reasoning-text {
+  color: #d0f7fb;
+  font-size: .82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* ── Prompt suggestions ───────────────────────────────────────────────── */
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.pill {
+  border-radius: 999px;
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: .72rem;
+  color: var(--aqua-soft);
+}
+
+@media (max-width: 480px) {
+  .suggestions { grid-template-columns: 1fr; }
+}
