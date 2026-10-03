@@ -39,24 +39,6 @@ Tone.js (Web Audio) · HTML / CSS / JavaScript (ES modules, no build step) · Gr
 
 ## Architecture
 
-The app is a small object-oriented system with one-way data flow:
-
-```mermaid
-flowchart LR
-  user((User)) --> views
-  subgraph browser [Browser]
-    views[Views<br/>js/ui] -- user events --> app[SynthApp<br/>js/app]
-    app -- changes --> state[SynthState<br/>js/model]
-    state -- change events --> app
-    app -- render --> views
-    app -- apply patch --> engine[AudioEngine<br/>Tone.js]
-    app --> designer[PatchDesigner<br/>Remote / Keyword]
-    app --> presets[PresetRepository<br/>localStorage]
-  end
-  designer -- POST /api/generate-patch --> fn[Netlify function]
-  fn --> groq[Groq LLM]
-```
-
 - **One-way data flow.** Views only report what the user did. `SynthApp` decides what it means and updates `SynthState`, whose change events re-render the views and update the audio engine. Views never call each other.
 - **Polymorphism.** `SynthApp` depends on the abstract `PatchDesigner` interface. The AI-backed `RemotePatchDesigner` and the offline `KeywordPatchDesigner` are interchangeable; the fallback is just a second designer.
 - **Encapsulation.** Classes keep their internals in private `#fields`. `Patch` is immutable and validates every value, so out-of-range or malformed AI output can't reach the audio engine.
